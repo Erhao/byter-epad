@@ -20,7 +20,7 @@ def sub_byter_cnt_topic_handler(client, userdata, msg):
     data = json.loads(msg.payload.decode())
 
     mac = data['mac']
-    bid = data['mac']
+    bid = data['bid']
     cnt = data['cnt']
 
     # 保存cnt
