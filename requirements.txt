@@ -1,2 +1,7 @@
+arrow==1.2.1
 paho-mqtt==1.6.1
+python-dateutil==2.8.2
 python-dotenv==0.19.1
+redis==3.5.3
+six==1.16.0
+typing-extensions==3.10.0.2
