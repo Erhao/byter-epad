@@ -11,7 +11,7 @@ def send_mqtt_msg(client_id, topic, payload):
     :param payload:
     :return:
     """
-    mqtt_cli = MqttClient(client_id)
+    mqtt_cli = MQTT(client_id)
     mqtt_cli.connect_mqtt()
     mqtt_cli.publish(topic, payload)
 
@@ -24,18 +24,18 @@ def recv_mqtt_msg(client_id, topic, callback):
     :param callback:
     :return:
     """
-    mqtt_cli = MqttClient(client_id)
+    mqtt_cli = MQTT(client_id)
     mqtt_cli.connect_mqtt()
     mqtt_cli.subscribe(topic, callback)
 
 
-class MqttClient(object):
+class MQTT(object):
     def __init__(self, client_id):
         load_dotenv(".env")
-        self.broker = os.getenv('MQTT_BROKER')
+        self.broker = os.getenv('MQTT_BROKER', '127.0.0.1')
         self.port = int(os.getenv('MQTT_PORT'))
-        self.client = None
         self.client_id = os.getenv('MQTT_CLIENT_ID') + str(client_id)
+        self.client = mqtt_client.Client(self.client_id)
 
     def connect_mqtt(self):
         def on_connect(client, userdata, flags, rc):
@@ -44,28 +44,22 @@ class MqttClient(object):
             else:
                 print("Failed to connect, return code %d\n", rc)
 
-        self.client = mqtt_client.Client(self.client_id)
         self.client.on_connect = on_connect
         print(self.broker, self.port)
         self.client.connect(self.broker, self.port)
-
-        # self.client.loop_start()
-        # print('0000000')
-        # self.client.loop_forever()
-        # print('1111111')
 
     def publish(self, topic, payload, **kwargs):
         result = self.client.publish(topic, payload)
         # result: [0, 1]
         status = result[0]
         if status == 0:
-            print(f"Send `{payload}` to topic `{topic}`")
+            print(f"Send <{payload}> to topic <{topic}>")
         else:
             print(f"Failed to send message to topic {topic}")
 
     def subscribe(self, topic, callback):
         def on_message(client, userdata, msg):
-            print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+            print(f"Received <{msg.payload.decode()}> from <{msg.topic}> topic")
 
         self.client.subscribe(topic)
         self.client.on_message = callback

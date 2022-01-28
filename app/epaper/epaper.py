@@ -11,17 +11,65 @@ if os.path.exists(libdir):
 import logging
 from waveshare_epd import epd3in7
 from PIL import Image, ImageDraw, ImageFont
-import traceback
+
+from app.decorator import singleton
+
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 """
+3.7inch
+    局部刷新时间均在0.3秒左右
+    全局刷新3秒
+    分辨率: 480*280pixels
+    灰度等级: 4 黑色 深灰 浅灰 白色
+
 文档: https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html
 ImageDraw方法: https://zhuanlan.zhihu.com/p/59849190
     
     * multiline_text
 """
+
+def draw():
+    """
+
+    """
+    pass
+
+
+@singleton
+class EPaper():
+    def __init__(self) -> None:
+        self.epd = epd3in7.EPD()
+        # 初始化并清屏
+        self.epd.init(0)
+        self.epd.Clear(0xFF, 0)
+        # 定义字体
+        self.font36 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 36)
+        self.font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
+        self.font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
+
+    def clear(self):
+        # 初始化并清屏
+        self.epd.init(0)
+        self.epd.Clear(0xFF, 0)
+
+    def partial_refresh(self):
+        self.epd.init(1)         # 1 Gary mode
+        self.epd.Clear(0xFF, 1)
+        time_image = Image.new('1', (self.epd.height, self.epd.width), 255)
+        time_draw = ImageDraw.Draw(time_image)
+        num = 0
+        while (True):
+            time_draw.rectangle((10, 10, 120, 50), fill = 255)
+            time_draw.text((10, 10), time.strftime('%H:%M:%S'), font = self.font24, fill = 0)
+            self.epd.display_1Gray(self.epd.getbuffer(time_image))
+            num = num + 1
+
+            if(num == 100):
+                break
+
 
 def demo():
     try:
